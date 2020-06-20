@@ -31,8 +31,6 @@ import com.luck.picture.lib.tools.ToastUtils;
 import com.luck.picture.lib.tools.ValueOf;
 import com.luck.picture.lib.tools.VoiceUtils;
 import com.luck.picture.lib.widget.PreviewViewPager;
-import com.yalantis.ucrop.UCrop;
-import com.yalantis.ucrop.model.CutInfo;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -854,50 +852,7 @@ public class PicturePreviewActivity extends PictureBaseActivity implements
      * @param image
      */
     private void bothMimeTypeWith(String mimeType, LocalMedia image) {
-        if (config.enableCrop) {
-            isCompleteOrSelected = false;
-            boolean isHasImage = PictureMimeType.isHasImage(mimeType);
-            if (config.selectionMode == PictureConfig.SINGLE && isHasImage) {
-                config.originalPath = image.getPath();
-                startCrop(config.originalPath, image.getMimeType());
-            } else {
-                // 是图片和选择压缩并且是多张，调用批量压缩
-                ArrayList<CutInfo> cuts = new ArrayList<>();
-                int count = selectData.size();
-                int imageNum = 0;
-                for (int i = 0; i < count; i++) {
-                    LocalMedia media = selectData.get(i);
-                    if (media == null
-                            || TextUtils.isEmpty(media.getPath())) {
-                        continue;
-                    }
-                    if (PictureMimeType.isHasImage(media.getMimeType())) {
-                        imageNum++;
-                    }
-                    CutInfo cutInfo = new CutInfo();
-                    cutInfo.setId(media.getId());
-                    cutInfo.setPath(media.getPath());
-                    cutInfo.setImageWidth(media.getWidth());
-                    cutInfo.setImageHeight(media.getHeight());
-                    cutInfo.setMimeType(media.getMimeType());
-                    cutInfo.setAndroidQToPath(media.getAndroidQToPath());
-                    cutInfo.setId(media.getId());
-                    cutInfo.setDuration(media.getDuration());
-                    cutInfo.setRealPath(media.getRealPath());
-                    cuts.add(cutInfo);
-                }
-                if (imageNum <= 0) {
-                    // 全是视频
-                    isCompleteOrSelected = true;
-                    onBackPressed();
-                } else {
-                    // 图片和视频共存
-                    startCrop(cuts);
-                }
-            }
-        } else {
-            onBackPressed();
-        }
+        onBackPressed();
     }
 
     /**
@@ -907,69 +862,12 @@ public class PicturePreviewActivity extends PictureBaseActivity implements
      * @param image
      */
     private void separateMimeTypeWith(String mimeType, LocalMedia image) {
-        if (config.enableCrop && PictureMimeType.isHasImage(mimeType)) {
-            isCompleteOrSelected = false;
-            if (config.selectionMode == PictureConfig.SINGLE) {
-                config.originalPath = image.getPath();
-                startCrop(config.originalPath, image.getMimeType());
-            } else {
-                // 是图片和选择压缩并且是多张，调用批量压缩
-                ArrayList<CutInfo> cuts = new ArrayList<>();
-                int count = selectData.size();
-                for (int i = 0; i < count; i++) {
-                    LocalMedia media = selectData.get(i);
-                    if (media == null
-                            || TextUtils.isEmpty(media.getPath())) {
-                        continue;
-                    }
-                    CutInfo cutInfo = new CutInfo();
-                    cutInfo.setId(media.getId());
-                    cutInfo.setPath(media.getPath());
-                    cutInfo.setImageWidth(media.getWidth());
-                    cutInfo.setImageHeight(media.getHeight());
-                    cutInfo.setMimeType(media.getMimeType());
-                    cutInfo.setAndroidQToPath(media.getAndroidQToPath());
-                    cutInfo.setId(media.getId());
-                    cutInfo.setDuration(media.getDuration());
-                    cutInfo.setRealPath(media.getRealPath());
-                    cuts.add(cutInfo);
-                }
-                startCrop(cuts);
-            }
-        } else {
-            onBackPressed();
-        }
+        onBackPressed();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case UCrop.REQUEST_MULTI_CROP:
-                    // 裁剪数据
-                    List<CutInfo> list = UCrop.getMultipleOutput(data);
-                    data.putParcelableArrayListExtra(UCrop.Options.EXTRA_OUTPUT_URI_LIST,
-                            (ArrayList<? extends Parcelable>) list);
-                    // 已选数量
-                    data.putParcelableArrayListExtra(PictureConfig.EXTRA_SELECT_LIST,
-                            (ArrayList<? extends Parcelable>) selectData);
-                    setResult(RESULT_OK, data);
-                    finish();
-                    break;
-                case UCrop.REQUEST_CROP:
-                    if (data != null) {
-                        data.putParcelableArrayListExtra(PictureConfig.EXTRA_SELECT_LIST,
-                                (ArrayList<? extends Parcelable>) selectData);
-                        setResult(RESULT_OK, data);
-                    }
-                    finish();
-                    break;
-            }
-        } else if (resultCode == UCrop.RESULT_ERROR) {
-            Throwable throwable = (Throwable) data.getSerializableExtra(UCrop.EXTRA_ERROR);
-            ToastUtils.s(getContext(), throwable.getMessage());
-        }
     }
 
 

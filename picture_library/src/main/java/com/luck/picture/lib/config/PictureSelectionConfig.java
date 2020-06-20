@@ -101,7 +101,6 @@ public final class PictureSelectionConfig implements Parcelable {
     public boolean isDragFrame;
     public boolean isNotPreviewDownload;
     public boolean isWithVideoImage;
-    public UCropOptions uCropOptions;
     public static ImageEngine imageEngine;
     public static CacheResourcesEngine cacheResourcesEngine;
     public static OnResultCallbackListener listener;
@@ -231,7 +230,6 @@ public final class PictureSelectionConfig implements Parcelable {
         renameCompressFileName = "";
         renameCropFileName = "";
         selectionMedias = new ArrayList<>();
-        uCropOptions = null;
         style = null;
         cropStyle = null;
         windowAnimationStyle = null;
@@ -369,7 +367,6 @@ public final class PictureSelectionConfig implements Parcelable {
         dest.writeByte(this.isDragFrame ? (byte) 1 : (byte) 0);
         dest.writeByte(this.isNotPreviewDownload ? (byte) 1 : (byte) 0);
         dest.writeByte(this.isWithVideoImage ? (byte) 1 : (byte) 0);
-        dest.writeParcelable(this.uCropOptions, flags);
         dest.writeTypedList(this.selectionMedias);
         dest.writeString(this.cameraFileName);
         dest.writeByte(this.isCheckOriginalImage ? (byte) 1 : (byte) 0);
@@ -474,7 +471,6 @@ public final class PictureSelectionConfig implements Parcelable {
         this.isDragFrame = in.readByte() != 0;
         this.isNotPreviewDownload = in.readByte() != 0;
         this.isWithVideoImage = in.readByte() != 0;
-        this.uCropOptions = in.readParcelable(UCropOptions.class.getClassLoader());
         this.selectionMedias = in.createTypedArrayList(LocalMedia.CREATOR);
         this.cameraFileName = in.readString();
         this.isCheckOriginalImage = in.readByte() != 0;

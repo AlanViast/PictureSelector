@@ -14,7 +14,6 @@ import com.luck.picture.lib.animators.AnimationType;
 import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.config.PictureMimeType;
 import com.luck.picture.lib.config.PictureSelectionConfig;
-import com.luck.picture.lib.config.UCropOptions;
 import com.luck.picture.lib.engine.CacheResourcesEngine;
 import com.luck.picture.lib.engine.ImageEngine;
 import com.luck.picture.lib.entity.LocalMedia;
@@ -225,15 +224,6 @@ public class PictureSelectionModel {
      */
     public PictureSelectionModel isEnableCrop(boolean enableCrop) {
         selectionConfig.enableCrop = enableCrop;
-        return this;
-    }
-
-    /**
-     * @param uCropOptions UCrop parameter configuration is provided
-     * @return
-     */
-    public PictureSelectionModel basicUCropConfig(UCropOptions uCropOptions) {
-        selectionConfig.uCropOptions = uCropOptions;
         return this;
     }
 

@@ -25,7 +25,6 @@ import com.luck.picture.lib.tools.PictureFileUtils;
 import com.luck.picture.lib.tools.SdkVersionUtils;
 import com.luck.picture.lib.tools.ToastUtils;
 import com.luck.picture.lib.tools.ValueOf;
-import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -134,9 +133,6 @@ public class PictureSelectorCameraEmptyActivity extends PictureBaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
-                case UCrop.REQUEST_CROP:
-                    singleCropHandleResult(data);
-                    break;
                 case PictureConfig.REQUEST_CAMERA:
                     dispatchHandleCamera(data);
                     break;
@@ -148,87 +144,7 @@ public class PictureSelectorCameraEmptyActivity extends PictureBaseActivity {
                 PictureSelectionConfig.listener.onCancel();
             }
             closeActivity();
-        } else if (resultCode == UCrop.RESULT_ERROR) {
-            if (data == null) {
-                return;
-            }
-            Throwable throwable = (Throwable) data.getSerializableExtra(UCrop.EXTRA_ERROR);
-            ToastUtils.s(getContext(), throwable.getMessage());
         }
-    }
-
-    /**
-     * Single picture clipping callback
-     *
-     * @param data
-     */
-    protected void singleCropHandleResult(Intent data) {
-        if (data == null) {
-            return;
-        }
-        List<LocalMedia> medias = new ArrayList<>();
-        Uri resultUri = UCrop.getOutput(data);
-        if (resultUri == null) {
-            return;
-        }
-        String cutPath = resultUri.getPath();
-        boolean isCutEmpty = TextUtils.isEmpty(cutPath);
-        LocalMedia media = new LocalMedia(config.cameraPath, 0, false,
-                config.isCamera ? 1 : 0, 0, config.chooseMode);
-        if (SdkVersionUtils.checkedAndroid_Q()) {
-            int lastIndexOf = config.cameraPath.lastIndexOf("/") + 1;
-            media.setId(lastIndexOf > 0 ? ValueOf.toLong(config.cameraPath.substring(lastIndexOf)) : -1);
-            media.setAndroidQToPath(cutPath);
-            if (isCutEmpty) {
-                if (PictureMimeType.isContent(config.cameraPath)) {
-                    String path = PictureFileUtils.getPath(this, Uri.parse(config.cameraPath));
-                    media.setSize(!TextUtils.isEmpty(path) ? new File(path).length() : 0);
-                } else {
-                    media.setSize(new File(config.cameraPath).length());
-                }
-            } else {
-                media.setSize(new File(cutPath).length());
-            }
-        } else {
-            // Taking a photo generates a temporary id
-            media.setId(System.currentTimeMillis());
-            media.setSize(new File(isCutEmpty ? media.getPath() : cutPath).length());
-        }
-        media.setCut(!isCutEmpty);
-        media.setCutPath(cutPath);
-        String mimeType = PictureMimeType.getImageMimeType(cutPath);
-        media.setMimeType(mimeType);
-        int width = 0, height = 0;
-        media.setOrientation(-1);
-        if (PictureMimeType.isContent(media.getPath())) {
-            if (PictureMimeType.isHasVideo(media.getMimeType())) {
-                int[] size = MediaUtils.getVideoSizeForUri(getContext(), Uri.parse(media.getPath()));
-                width = size[0];
-                height = size[1];
-            } else if (PictureMimeType.isHasImage(media.getMimeType())) {
-                int[] size = MediaUtils.getImageSizeForUri(getContext(), Uri.parse(media.getPath()));
-                width = size[0];
-                height = size[1];
-            }
-        } else {
-            if (PictureMimeType.isHasVideo(media.getMimeType())) {
-                int[] size = MediaUtils.getVideoSizeForUrl(media.getPath());
-                width = size[0];
-                height = size[1];
-            } else if (PictureMimeType.isHasImage(media.getMimeType())) {
-                int[] size = MediaUtils.getImageSizeForUrl(media.getPath());
-                width = size[0];
-                height = size[1];
-            }
-        }
-        media.setWidth(width);
-        media.setHeight(height);
-        // The width and height of the image are reversed if there is rotation information
-        MediaUtils.setOrientationAsynchronous(getContext(), media, config.isAndroidQChangeWH, config.isAndroidQChangeVideoWH,
-                item -> {
-                    medias.add(item);
-                    handlerResult(medias);
-                });
     }
 
     /**

@@ -65,8 +65,6 @@ import com.luck.picture.lib.tools.ToastUtils;
 import com.luck.picture.lib.tools.ValueOf;
 import com.luck.picture.lib.widget.FolderPopWindow;
 import com.luck.picture.lib.widget.RecyclerPreloadView;
-import com.yalantis.ucrop.UCrop;
-import com.yalantis.ucrop.model.CutInfo;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -794,7 +792,7 @@ public class PictureSelectorActivity extends PictureBaseActivity implements View
         bundle.putBoolean(PictureConfig.EXTRA_SHOW_CAMERA, mAdapter.isShowCamera());
         bundle.putString(PictureConfig.EXTRA_IS_CURRENT_DIRECTORY, mTvPictureTitle.getText().toString());
         JumpUtils.startPicturePreviewActivity(getContext(), config.isWeChatStyle, bundle,
-                config.selectionMode == PictureConfig.SINGLE ? UCrop.REQUEST_CROP : UCrop.REQUEST_MULTI_CROP);
+                config.selectionMode == PictureConfig.SINGLE ? 69 : 609);
 
         overridePendingTransition(config.windowAnimationStyle != null
                         && config.windowAnimationStyle.activityPreviewEnterAnimation != 0
@@ -896,40 +894,7 @@ public class PictureSelectorActivity extends PictureBaseActivity implements View
         if (image == null) {
             return;
         }
-        if (config.enableCrop) {
-            if (config.selectionMode == PictureConfig.SINGLE && isHasImage) {
-                config.originalPath = image.getPath();
-                startCrop(config.originalPath, image.getMimeType());
-            } else {
-                ArrayList<CutInfo> cuts = new ArrayList<>();
-                int count = images.size();
-                int imageNum = 0;
-                for (int i = 0; i < count; i++) {
-                    LocalMedia media = images.get(i);
-                    if (media == null
-                            || TextUtils.isEmpty(media.getPath())) {
-                        continue;
-                    }
-                    if (PictureMimeType.isHasImage(media.getMimeType())) {
-                        imageNum++;
-                    }
-                    CutInfo cutInfo = new CutInfo();
-                    cutInfo.setId(media.getId());
-                    cutInfo.setPath(media.getPath());
-                    cutInfo.setImageWidth(media.getWidth());
-                    cutInfo.setImageHeight(media.getHeight());
-                    cutInfo.setMimeType(media.getMimeType());
-                    cutInfo.setDuration(media.getDuration());
-                    cutInfo.setRealPath(media.getRealPath());
-                    cuts.add(cutInfo);
-                }
-                if (imageNum <= 0) {
-                    onResult(images);
-                } else {
-                    startCrop(cuts);
-                }
-            }
-        } else if (config.isCompress) {
+        if (config.isCompress) {
             int size = images.size();
             int imageNum = 0;
             for (int i = 0; i < size; i++) {
@@ -960,32 +925,7 @@ public class PictureSelectorActivity extends PictureBaseActivity implements View
         if (image == null) {
             return;
         }
-        if (config.enableCrop && isHasImage) {
-            if (config.selectionMode == PictureConfig.SINGLE) {
-                config.originalPath = image.getPath();
-                startCrop(config.originalPath, image.getMimeType());
-            } else {
-                ArrayList<CutInfo> cuts = new ArrayList<>();
-                int count = images.size();
-                for (int i = 0; i < count; i++) {
-                    LocalMedia media = images.get(i);
-                    if (media == null
-                            || TextUtils.isEmpty(media.getPath())) {
-                        continue;
-                    }
-                    CutInfo cutInfo = new CutInfo();
-                    cutInfo.setId(media.getId());
-                    cutInfo.setPath(media.getPath());
-                    cutInfo.setImageWidth(media.getWidth());
-                    cutInfo.setImageHeight(media.getHeight());
-                    cutInfo.setMimeType(media.getMimeType());
-                    cutInfo.setDuration(media.getDuration());
-                    cutInfo.setRealPath(media.getRealPath());
-                    cuts.add(cutInfo);
-                }
-                startCrop(cuts);
-            }
-        } else if (config.isCompress
+        if (config.isCompress
                 && isHasImage) {
             compressImage(images);
         } else {
@@ -1356,7 +1296,7 @@ public class PictureSelectorActivity extends PictureBaseActivity implements View
             bundle.putInt(PictureConfig.EXTRA_DATA_COUNT, ValueOf.toInt(mTvPictureTitle.getTag(R.id.view_count_tag)));
             bundle.putString(PictureConfig.EXTRA_IS_CURRENT_DIRECTORY, mTvPictureTitle.getText().toString());
             JumpUtils.startPicturePreviewActivity(getContext(), config.isWeChatStyle, bundle,
-                    config.selectionMode == PictureConfig.SINGLE ? UCrop.REQUEST_CROP : UCrop.REQUEST_MULTI_CROP);
+                    config.selectionMode == PictureConfig.SINGLE ? 69 : 609);
             overridePendingTransition(config.windowAnimationStyle != null
                     && config.windowAnimationStyle.activityPreviewEnterAnimation != 0
                     ? config.windowAnimationStyle.activityPreviewEnterAnimation : R.anim.picture_anim_enter, R.anim.picture_anim_fade_in);
@@ -1449,12 +1389,6 @@ public class PictureSelectorActivity extends PictureBaseActivity implements View
                         }
                     }
                     break;
-                case UCrop.REQUEST_CROP:
-                    singleCropHandleResult(data);
-                    break;
-                case UCrop.REQUEST_MULTI_CROP:
-                    multiCropHandleResult(data);
-                    break;
                 case PictureConfig.REQUEST_CAMERA:
                     dispatchHandleCamera(data);
                     break;
@@ -1463,13 +1397,6 @@ public class PictureSelectorActivity extends PictureBaseActivity implements View
             }
         } else if (resultCode == RESULT_CANCELED) {
             previewCallback(data);
-        } else if (resultCode == UCrop.RESULT_ERROR) {
-            if (data != null) {
-                Throwable throwable = (Throwable) data.getSerializableExtra(UCrop.EXTRA_ERROR);
-                if (throwable != null) {
-                    ToastUtils.s(getContext(), throwable.getMessage());
-                }
-            }
         }
     }
 
@@ -1817,142 +1744,6 @@ public class PictureSelectorActivity extends PictureBaseActivity implements View
             }
         }
         return isEnterNext;
-    }
-
-    /**
-     * Single picture clipping callback
-     *
-     * @param data
-     */
-    private void singleCropHandleResult(Intent data) {
-        if (data == null) {
-            return;
-        }
-        Uri resultUri = UCrop.getOutput(data);
-        if (resultUri == null) {
-            return;
-        }
-        List<LocalMedia> result = new ArrayList<>();
-        String cutPath = resultUri.getPath();
-        if (mAdapter != null) {
-            List<LocalMedia> list = data.getParcelableArrayListExtra(PictureConfig.EXTRA_SELECT_LIST);
-            if (list != null) {
-                mAdapter.bindSelectData(list);
-                mAdapter.notifyDataSetChanged();
-            }
-            List<LocalMedia> mediaList = mAdapter.getSelectedData();
-            LocalMedia media = mediaList != null && mediaList.size() > 0 ? mediaList.get(0) : null;
-            if (media != null) {
-                config.originalPath = media.getPath();
-                media.setCutPath(cutPath);
-                media.setChooseModel(config.chooseMode);
-                boolean isCutPathEmpty = !TextUtils.isEmpty(cutPath);
-                if (SdkVersionUtils.checkedAndroid_Q()
-                        && PictureMimeType.isContent(media.getPath())) {
-                    if (isCutPathEmpty) {
-                        media.setSize(new File(cutPath).length());
-                    } else {
-                        media.setSize(!TextUtils.isEmpty(media.getRealPath()) ? new File(media.getRealPath()).length() : 0);
-                    }
-                    media.setAndroidQToPath(cutPath);
-                } else {
-                    media.setSize(isCutPathEmpty ? new File(cutPath).length() : 0);
-                }
-                media.setCut(isCutPathEmpty);
-                result.add(media);
-                handlerResult(result);
-            } else {
-                // Preview screen selects the image and crop the callback
-                media = list != null && list.size() > 0 ? list.get(0) : null;
-                if (media != null) {
-                    config.originalPath = media.getPath();
-                    media.setCutPath(cutPath);
-                    media.setChooseModel(config.chooseMode);
-                    boolean isCutPathEmpty = !TextUtils.isEmpty(cutPath);
-                    if (SdkVersionUtils.checkedAndroid_Q()
-                            && PictureMimeType.isContent(media.getPath())) {
-                        if (isCutPathEmpty) {
-                            media.setSize(new File(cutPath).length());
-                        } else {
-                            media.setSize(!TextUtils.isEmpty(media.getRealPath()) ? new File(media.getRealPath()).length() : 0);
-                        }
-                        media.setAndroidQToPath(cutPath);
-                    } else {
-                        media.setSize(isCutPathEmpty ? new File(cutPath).length() : 0);
-                    }
-                    media.setCut(isCutPathEmpty);
-                    result.add(media);
-                    handlerResult(result);
-                }
-            }
-        }
-    }
-
-    /**
-     * Multiple picture crop
-     *
-     * @param data
-     */
-    protected void multiCropHandleResult(Intent data) {
-        if (data == null) {
-            return;
-        }
-        List<CutInfo> mCuts = UCrop.getMultipleOutput(data);
-        if (mCuts == null || mCuts.size() == 0) {
-            return;
-        }
-        int size = mCuts.size();
-        boolean isAndroidQ = SdkVersionUtils.checkedAndroid_Q();
-        List<LocalMedia> list = data.getParcelableArrayListExtra(PictureConfig.EXTRA_SELECT_LIST);
-        if (list != null) {
-            mAdapter.bindSelectData(list);
-            mAdapter.notifyDataSetChanged();
-        }
-        int oldSize = mAdapter != null ? mAdapter.getSelectedData().size() : 0;
-        if (oldSize == size) {
-            List<LocalMedia> result = mAdapter.getSelectedData();
-            for (int i = 0; i < size; i++) {
-                CutInfo c = mCuts.get(i);
-                LocalMedia media = result.get(i);
-                media.setCut(!TextUtils.isEmpty(c.getCutPath()));
-                media.setPath(c.getPath());
-                media.setMimeType(c.getMimeType());
-                media.setCutPath(c.getCutPath());
-                media.setWidth(c.getImageWidth());
-                media.setHeight(c.getImageHeight());
-                media.setAndroidQToPath(isAndroidQ ? c.getCutPath() : media.getAndroidQToPath());
-                media.setSize(!TextUtils.isEmpty(c.getCutPath()) ? new File(c.getCutPath()).length() : media.getSize());
-            }
-            handlerResult(result);
-        } else {
-            // Fault-tolerant processing
-            List<LocalMedia> result = new ArrayList<>();
-            for (int i = 0; i < size; i++) {
-                CutInfo c = mCuts.get(i);
-                LocalMedia media = new LocalMedia();
-                media.setId(c.getId());
-                media.setCut(!TextUtils.isEmpty(c.getCutPath()));
-                media.setPath(c.getPath());
-                media.setCutPath(c.getCutPath());
-                media.setMimeType(c.getMimeType());
-                media.setWidth(c.getImageWidth());
-                media.setHeight(c.getImageHeight());
-                media.setDuration(c.getDuration());
-                media.setChooseModel(config.chooseMode);
-                media.setAndroidQToPath(isAndroidQ ? c.getCutPath() : c.getAndroidQToPath());
-                if (!TextUtils.isEmpty(c.getCutPath())) {
-                    media.setSize(new File(c.getCutPath()).length());
-                } else {
-                    if (SdkVersionUtils.checkedAndroid_Q() && PictureMimeType.isContent(c.getPath())) {
-                        media.setSize(!TextUtils.isEmpty(c.getRealPath()) ? new File(c.getRealPath()).length() : 0);
-                    } else {
-                        media.setSize(new File(c.getPath()).length());
-                    }
-                }
-                result.add(media);
-            }
-            handlerResult(result);
-        }
     }
 
     /**
